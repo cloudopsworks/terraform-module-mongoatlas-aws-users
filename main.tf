@@ -10,9 +10,9 @@
 module "mongoatlas_users" {
   source = "git::https://github.com/cloudopsworks/terraform-module-mongoatlas-users.git?ref=master"
 
-  is_hub    = var.is_hub
-  spoke_def = var.spoke_def
-  org       = var.org
+  is_hub     = var.is_hub
+  spoke_def  = var.spoke_def
+  org        = var.org
   extra_tags = var.extra_tags
 
   name_prefix                 = var.name_prefix
