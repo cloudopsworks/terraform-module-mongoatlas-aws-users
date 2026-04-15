@@ -1,1 +1,64 @@
-# Module configuration
+##
+# Module-specific inputs for the MongoDB Atlas Users (AWS) module.
+# These values are loaded by terragrunt.hcl as local.local_vars.
+#
+##
+
+# name_prefix: "atlas"  # (Required) Prefix used to compose usernames. Allowed: lowercase letters, numbers, hyphens.
+name_prefix: ""
+
+# project_id: ""        # (Optional) Atlas Project ID. One of `project_id` or `project_name` required. Default: "".
+project_id: ""
+
+# project_name: ""      # (Optional) Atlas Project Name. One of `project_id` or `project_name` required. Default: "".
+project_name: ""
+
+# users:                # (Required) Map of MongoDB Atlas users to manage.
+#   <user_key>:
+#     username: "user1" # (Optional) Explicit username. If omitted, composed as `<name_prefix>-<system_name_short>-<key>`.
+#     name_prefix: ""   # (Optional) Per-user prefix. Defaults to var.name_prefix.
+#     auth_database: "admin" # (Optional) Authentication database. Default: "admin".
+#     password_rotation_period: 90 # (Optional) Per-user rotation in days. Overrides var.password_rotation_period.
+#     import: false     # (Optional) Import existing Atlas user. Default: false.
+#     role_name: "readwrite" # (Optional) Role key for Hoop naming. Default: "default".
+#     roles:            # (Required) MongoDB roles.
+#       - role_name: "readWrite" # (Required) Role name.
+#         database_name: "test"  # (Required) Database.
+#         collection_name: ""    # (Optional) Collection scope.
+#     scopes:           # (Optional) Atlas scope bindings.
+#       - name: "cluster-name" # (Required) Cluster name.
+#         type: "CLUSTER"      # (Optional) CLUSTER or DATA_LAKE. Default: "CLUSTER".
+#     connection_strings: # (Optional) Connection string config.
+#       enabled: false  # (Optional) Include connection strings. Default: false.
+#       cluster: ""     # (Required if enabled) Atlas Cluster name.
+#       endpoint_id: "" # (Optional) Private endpoint ID for PrivateLink.
+#       database_name: "" # (Optional) Database name in URI.
+#     hoop:             # (Optional) Per-user Hoop overrides.
+#       import: false   # (Optional) Import existing Hoop connection. Default: false.
+#       access_control: [] # (Optional) Per-user access control groups.
+users: {}
+
+# hoop:                 # (Optional) Hoop.dev connection metadata output config.
+#   enabled: false      # (Optional) Enable Hoop output. Default: false.
+#   agent_id: ""        # (Required if enabled) Hoop agent UUID.
+#   tags: {}            # (Optional) Tags for Hoop connections.
+#   access_control: []  # (Optional) Global access control groups.
+hoop: {}
+
+# password_rotation_period: 90 # (Optional) Default rotation in days (1-365). Default: 90.
+# password_rotation_period: 90
+
+# force_reset: false    # (Optional) Force-reset credentials (break-glass). Default: false.
+# force_reset: false
+
+# rotation_lambda_name: "" # (Optional) Lambda for Secrets Manager rotation. When set, enables Lambda rotation. Default: "".
+# rotation_lambda_name: ""
+
+# rotation_duration: "1h" # (Optional) Max runtime for rotation Lambda. Default: "1h".
+# rotation_duration: "1h"
+
+# rotate_immediately: false # (Optional) Rotate immediately on enable. Default: false.
+# rotate_immediately: false
+
+# secrets_kms_key_id: null # (Optional) KMS Key ID/ARN/Alias for Secrets Manager encryption. Default: null.
+# secrets_kms_key_id: null

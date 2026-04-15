@@ -1,37 +1,269 @@
-name: Terraform Transit Gateway Module
+name: Terraform MongoDB Atlas Users Management Module (AWS)
 #logo: logo/logo.jpg
 badges:
   - name: Latest Release
-    image: https://img.shields.io/github/release/<owner/repo>.svg?style=for-the-badge
-    url: https://github.com/<owner/repo>/releases/latest
+    image: https://img.shields.io/github/release/cloudopsworks/terraform-module-mongoatlas-aws-users.svg?style=for-the-badge
+    url: https://github.com/cloudopsworks/terraform-module-mongoatlas-aws-users/releases/latest
   - name: Last Updated
-    image: https://img.shields.io/github/last-commit/<owner/repo>.svg?style=for-the-badge
-    url: https://github.com/<owner/repo>/commits
+    image: https://img.shields.io/github/last-commit/cloudopsworks/terraform-module-mongoatlas-aws-users.svg?style=for-the-badge
+    url: https://github.com/cloudopsworks/terraform-module-mongoatlas-aws-users/commits
 
 license: "APACHE2"
 
 copyrights:
   - name: "Cloud Ops Works LLC"
-    url: "https://cloudopsworks.co"
-    year: "2026"
+    url: "https://cloudops.works"
+    year: "2024"
 
-github_repo: <owner/repo>
+github_repo: cloudopsworks/terraform-module-mongoatlas-aws-users
 
 description: |-
-  <description>
+  AWS-specific MongoDB Atlas Users Management Module. Wraps the generic `terraform-module-mongoatlas-users`
+  core module and adds AWS Secrets Manager integration for credential storage, optional Lambda-based
+  password rotation, and Hoop.dev connection output using the official `_envs/aws/<secret-name>#<key>`
+  secret reference syntax.
 
 # Introduction to the project
 introduction: |-
-#  This is an introduction.
+  This Terraform module manages MongoDB Atlas database users and stores their credentials in
+  **AWS Secrets Manager**. It delegates user creation to the cloud-agnostic
+  [`terraform-module-mongoatlas-users`](https://github.com/cloudopsworks/terraform-module-mongoatlas-users)
+  core module and handles AWS-specific concerns:
+
+  - **Secrets Manager storage**: Each user's credentials (including connection strings) are stored
+    as JSON secrets in AWS Secrets Manager.
+  - **Password rotation**: Supports both local rotation via `time_rotating` and AWS Lambda-based
+    Secrets Manager rotation.
+  - **Hoop.dev integration**: When `hoop.enabled = true`, outputs a `hoop_connections` map with
+    secret references using the official Hoop.dev `_envs/aws/<secret-name>#<key>` syntax, ready
+    to be passed to [`terraform-module-hoop-connection`](https://github.com/cloudopsworks/terraform-module-hoop-connection).
+  - **State migration**: Includes `moved` blocks for seamless migration from the standalone
+    `terraform-module-mongoatlas-users` module.
+
+  **Architecture**: This module depends on the generic core module for user creation and adds
+  AWS-specific secret storage on top.
 
 # How to use this project
 usage: |-
+  ### Terragrunt Configuration
+
+  ```hcl
+  terraform {
+    source = "git::https://github.com/cloudopsworks/terraform-module-mongoatlas-aws-users.git?ref=v1.0.0"
+  }
+
+  inputs = {
+    # Organization and Environment Configuration
+    org = {
+      organization_name = "my-org"
+      organization_unit = "my-unit"
+      environment_type  = "prod"
+      environment_name  = "production"
+    }
+    is_hub    = false # (Optional) Whether this is a hub or spoke configuration. Default: false.
+    spoke_def = "001" # (Optional) Spoke definition. Default: "001".
+    extra_tags = {   # (Optional) Extra tags to apply to all resources. Default: {}.
+      "Owner" = "CloudOps"
+    }
+
+    # MongoDB Atlas Configuration
+    name_prefix  = "prod" # (Required) Prefix used to compose usernames when not explicitly provided.
+    project_id   = "60f0f0f0f0f0f0f0f0f0f0f0" # (Optional) Atlas Project ID. One of `project_id` or `project_name` must be provided. Default: "".
+    project_name = "my-project" # (Optional) Atlas Project Name. One of `project_id` or `project_name` must be provided. Default: "".
+
+    # User Configuration
+    users = {
+      "app-user" = {
+        roles = [
+          {
+            role_name     = "readWrite"
+            database_name = "app_db"
+          }
+        ]
+        connection_strings = {
+          enabled = true
+          cluster = "cluster0"
+        }
+        hoop = {
+          access_control = ["team-backend"]
+        }
+      }
+    }
+
+    # Hoop Configuration (data-only, consumed by terraform-module-hoop-connection)
+    hoop = {
+      enabled  = true
+      agent_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+      tags     = { environment = "production" }
+    }
+
+    # Password Management
+    password_rotation_period    = 90    # (Optional) Default rotation in days (1-365). Default: 90.
+    password_externally_managed = false # (Optional) When true, skips time_rotating. Use with rotation_lambda_name.
+    force_reset                 = false # (Optional) Force-reset credentials (break-glass).
+
+    # AWS Lambda Rotation (optional)
+    rotation_lambda_name = ""   # (Optional) Lambda function name for Secrets Manager rotation. Default: "".
+    rotation_duration    = "1h" # (Optional) Max runtime for rotation Lambda. Default: "1h".
+    rotate_immediately   = false # (Optional) Rotate immediately on enable. Default: false.
+
+    # AWS Secrets Manager
+    secrets_kms_key_id = null # (Optional) KMS Key ID/ARN/Alias for encryption. Default: null (AWS-managed).
+  }
+  ```
+
+  ### Full YAML Variables Documentation
+  ```yaml
+  name_prefix: "atlas" # (Required) Prefix used to compose usernames. Allowed: lowercase letters, numbers, hyphens. No default.
+  project_id: "60f0f0f0f0f0f0f0f0f0f0f0" # (Optional) Atlas Project ID. One of `project_id` or `project_name` required. Default: "".
+  project_name: "my-project" # (Optional) Atlas Project Name. One of `project_id` or `project_name` required. Default: "".
+  users:
+    <user_key>:
+      username: "user1" # (Optional) Explicit username. If omitted, composed as `<name_prefix>-<system_name_short>-<key>`.
+      name_prefix: "prefix1" # (Optional) Per-user prefix. Defaults to var.name_prefix.
+      auth_database: "admin" # (Optional) Authentication database. Default: "admin".
+      password_rotation_period: 90 # (Optional) Per-user rotation in days. Overrides var.password_rotation_period.
+      import: false # (Optional) When true, imports existing Atlas user. Default: false.
+      role_name: "readwrite" # (Optional) Role key for Hoop naming. Allowed: readwrite, read, dbadmin, admin, dbowner, owner, clusteradmin. Default: "default".
+      roles: # (Required) MongoDB roles.
+        - role_name: "readWrite" # (Required) Role name.
+          database_name: "test" # (Required) Database.
+          collection_name: "widgets" # (Optional) Collection scope.
+      scopes: # (Optional) Atlas scope bindings.
+        - name: "cluster-name" # (Required) Cluster name.
+          type: "CLUSTER" # (Optional) CLUSTER or DATA_LAKE. Default: "CLUSTER".
+      connection_strings: # (Optional) Connection string config.
+        enabled: false # (Optional) Include connection strings. Default: false.
+        cluster: "cluster0" # (Required if enabled) Atlas Cluster name.
+        endpoint_id: "" # (Optional) Private endpoint ID for PrivateLink.
+        database_name: "" # (Optional) Database name in URI.
+      hoop: # (Optional) Per-user Hoop overrides.
+        import: false # (Optional) Import existing Hoop connection. Default: false.
+        access_control: [] # (Optional) Per-user access control groups.
+  hoop:
+    enabled: false # (Optional) Enable Hoop.dev connection metadata output. Default: false.
+    agent_id: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" # (Required if enabled) Hoop agent UUID.
+    tags: {} # (Optional) Tags for Hoop connections.
+    access_control: [] # (Optional) Global access control groups.
+  password_rotation_period: 90 # (Optional) Default rotation in days (1-365). Default: 90.
+  force_reset: false # (Optional) Force-reset credentials. Default: false.
+  rotation_lambda_name: "" # (Optional) Lambda for Secrets Manager rotation. When set, enables Lambda rotation. Default: "".
+  rotation_duration: "1h" # (Optional) Max runtime for rotation Lambda. Default: "1h".
+  rotate_immediately: false # (Optional) Rotate immediately on enable. Default: false.
+  secrets_kms_key_id: null # (Optional) KMS Key ID/ARN/Alias for Secrets Manager encryption. Default: null.
+  org:
+    organization_name: "my-org" # (Required) Organization name.
+    organization_unit: "my-unit" # (Required) Organization unit.
+    environment_type: "prod" # (Required) Environment type.
+    environment_name: "production" # (Required) Environment name.
+  is_hub: false # (Optional) Hub or spoke configuration. Default: false.
+  spoke_def: "001" # (Optional) Spoke definition. Default: "001".
+  extra_tags: {} # (Optional) Extra tags. Default: {}.
+  ```
 
 # Example usage
 examples: |-
+  ### Basic Example — single user, no rotation
+
+  ```hcl
+  terraform {
+    source = "git::https://github.com/cloudopsworks/terraform-module-mongoatlas-aws-users.git?ref=v1.0.0"
+  }
+
+  inputs = {
+    org = {
+      organization_name = "cloudopsworks"
+      organization_unit = "devops"
+      environment_type  = "dev"
+      environment_name  = "development"
+    }
+    name_prefix = "dev"
+    project_id  = "5f7c8..."
+
+    users = {
+      "admin" = {
+        roles = [
+          {
+            role_name     = "atlasAdmin"
+            database_name = "admin"
+          }
+        ]
+      }
+    }
+  }
+  ```
+
+  ### Advanced Example — with Hoop.dev and Lambda rotation
+
+  ```hcl
+  terraform {
+    source = "git::https://github.com/cloudopsworks/terraform-module-mongoatlas-aws-users.git?ref=v1.0.0"
+  }
+
+  inputs = {
+    org = {
+      organization_name = "cloudopsworks"
+      organization_unit = "devops"
+      environment_type  = "prod"
+      environment_name  = "production"
+    }
+    name_prefix  = "prod"
+    project_name = "production-project"
+
+    users = {
+      "app-reader" = {
+        username      = "reader-svc"
+        auth_database = "admin"
+        roles = [
+          {
+            role_name     = "read"
+            database_name = "app_db"
+          }
+        ]
+        connection_strings = {
+          enabled     = true
+          cluster     = "cluster-prod"
+          endpoint_id = "vpce-0123456789abcdef"
+        }
+        hoop = {
+          access_control = ["team-backend"]
+        }
+      }
+    }
+
+    hoop = {
+      enabled  = true
+      agent_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+      tags     = { environment = "production", team = "backend" }
+    }
+
+    rotation_lambda_name = "mongodb-rotation-lambda"
+    password_rotation_period = 30
+    rotate_immediately = true
+  }
+  ```
+
+  ### Outputs
+
+  | Output | Description |
+  |--------|-------------|
+  | `users` | User metadata map enriched with AWS Secrets Manager secret name per user |
+  | `hoop_connections` | Hoop connection definitions with `_envs/aws/<secret>#<key>` references (null if hoop not enabled) |
 
 # How to get started quickly
 quickstart: |-
+  1. **Add the module** to your Terragrunt stack with `org`, `name_prefix`, and `users` configuration.
+
+  2. **Run** `terragrunt apply` — users are created in Atlas and credentials stored in Secrets Manager.
+
+  3. **Consume outputs**:
+     - `users` — contains secret names for each user's credentials.
+     - `hoop_connections` — pass to `terraform-module-hoop-connection` when `hoop.enabled = true`.
+
+  4. **Hoop.dev Integration** (optional):
+     When `hoop.enabled = true` and `hoop.agent_id` is set, the `hoop_connections` output provides
+     connection definitions with `_envs/aws/<secret-name>#<key>` secret references, ready for
+     `terraform-module-hoop-connection`.
 
 include:
   - "docs/targets.md"
