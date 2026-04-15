@@ -24,6 +24,32 @@ include "root" {
   path = find_in_parent_folders("{{ .RootFileName }}")
 }
 
+generate "provider-mongoatlas" {
+  path      = "provider-mongoatlas.g.tf"
+  if_exists = "overwrite_terragrunt"
+  contents  = <<EOF
+provider "mongodbatlas" {
+  assume_role {
+    role_arn     = "${local.global_vars.mongodb_atlas.secrets.sts_role_arn}"
+  }
+  aws_access_key_id     = "${get_env("AWS_ACCESS_KEY_ID", "")}"
+  aws_secret_access_key = "${get_env("AWS_SECRET_ACCESS_KEY", "")}"
+  aws_session_token     = "${get_env("AWS_SESSION_TOKEN", "")}"
+  secret_name           = "${local.global_vars.mongodb_atlas.secrets.name}"
+  region                = "${local.global_vars.mongodb_atlas.secrets.region}"
+  sts_endpoint          = "${local.global_vars.mongodb_atlas.secrets.sts_endpoint}"
+}
+EOF
+}
+{{ if .project }}
+dependency "project" {
+  config_path = "{{ .project_path }}"
+  mock_outputs_allowed_terraform_commands = ["validate", "destroy"]
+  mock_outputs = {
+    project_id = "8403958hjhhhtur"
+  }
+}
+{{ end }}
 terraform {
   source = "{{ .sourceUrl }}"
 }
@@ -38,8 +64,12 @@ inputs = {
   {{- end }}
   {{- end }}
   {{- range .optionalVariables }}
-  {{- if not (eq .Name "extra_tags" "is_hub" "spoke_def" "org") }}
+  {{- if not (eq .Name "extra_tags" "is_hub" "spoke_def" "org" "settings") }}
+  {{- if and $.project (eq .Name "project_id") }}
+  {{ .Name }} = dependency.project.outputs.project_id
+  {{- else }}
   {{ .Name }} = try(local.local_vars.{{ .Name }}, {{ .DefaultValue }})
+  {{- end }}
   {{- end }}
   {{- end }}
   extra_tags = local.tags

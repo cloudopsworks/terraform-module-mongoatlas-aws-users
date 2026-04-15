@@ -20,6 +20,16 @@ variables:
     type: map
     default: {}
   # End - Generic Boilerplate Variables Setup
+  - name: project
+    order: 2
+    description: "Project Dependency is enabled?"
+    type: bool
+    default: true
+  - name: project_path
+    order: 3
+    description: "Project Path, required if project is true"
+    type: string
+    default: "../project"
 
 hooks:
   after:
