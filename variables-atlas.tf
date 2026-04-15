@@ -124,3 +124,12 @@ variable "secrets_kms_key_id" {
   type        = string
   default     = null
 }
+
+variable "hoop_community" {
+  description = <<-EOD
+  hoop_community: true # (Optional) When true, use hoop community/open-source agent secret format (_aws:<secret>:<key>). When false, use enterprise/managed gateway format (_envs/aws/<secret>#<key>). Community only supports AWS Secrets Manager; GCP/Azure require manual agent configuration. Default: true.
+  EOD
+  type        = bool
+  default     = true
+  nullable    = false
+}

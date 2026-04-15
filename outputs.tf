@@ -17,12 +17,12 @@ output "users" {
 }
 
 output "hoop_connections" {
-  description = "Hoop connection definitions enriched with AWS Secrets Manager secret references. Pass as the `connections` input to terraform-module-hoop-connection. Uses hoop.dev _envs/aws/<secret-name>#<key> syntax."
+  description = "Hoop connection definitions enriched with AWS Secrets Manager secret references. Pass as the `connections` input to terraform-module-hoop-connection. Community mode uses _aws:<secret>:<key> syntax; enterprise mode uses _envs/aws/<secret-name>#<key>."
   value = module.mongoatlas_users.hoop_output != null ? {
     for key, conn in module.mongoatlas_users.hoop_output.connections : key => merge(conn, {
       agent_id = module.mongoatlas_users.hoop_output.agent_id
       secrets = {
-        "envvar:CONNECTION_STRING" = "_envs/aws/${aws_secretsmanager_secret.atlas_cred_conn[key].name}#${conn.use_private_endpoint ? "private_" : ""}connection_string"
+        "envvar:CONNECTION_STRING" = "${local.hoop_secret_prefix}${local.hoop_secret_sep}${aws_secretsmanager_secret.atlas_cred_conn[key].name}${local.hoop_secret_sep}${conn.use_private_endpoint ? "private_" : ""}connection_string"
       }
     })
   } : null
