@@ -64,6 +64,7 @@ variable "hoop" {
   description = <<-EOD
   hoop:
     enabled: false # (Optional) Enable Hoop.dev connection metadata output. Default: false.
+    community: true # (Optional) When true, use community/open-source agent secret format (_aws:<secret>:<key>). When false, use enterprise/managed gateway format (_envs/aws/<secret>#<key>). Default: true.
     agent_id: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" # (Required if enabled) Hoop.dev agent ID (UUID). No default.
     tags: # (Optional) Free-form tags for the Hoop connection. Default: {}.
       key: "value"
@@ -123,13 +124,4 @@ variable "secrets_kms_key_id" {
   EOD
   type        = string
   default     = null
-}
-
-variable "hoop_community" {
-  description = <<-EOD
-  hoop_community: true # (Optional) When true, use hoop community/open-source agent secret format (_aws:<secret>:<key>). When false, use enterprise/managed gateway format (_envs/aws/<secret>#<key>). Community only supports AWS Secrets Manager; GCP/Azure require manual agent configuration. Default: true.
-  EOD
-  type        = bool
-  default     = true
-  nullable    = false
 }

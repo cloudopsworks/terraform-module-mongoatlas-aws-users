@@ -142,6 +142,7 @@ usage: |-
         access_control: [] # (Optional) Per-user access control groups.
   hoop:
     enabled: false # (Optional) Enable Hoop.dev connection metadata output. Default: false.
+    community: true # (Optional) When true, use community agent format (_aws:<secret>:<key>). When false, use enterprise format (_envs/aws/<secret>#<key>). Default: true.
     agent_id: "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" # (Required if enabled) Hoop agent UUID.
     tags: {} # (Optional) Tags for Hoop connections.
     access_control: [] # (Optional) Global access control groups.
