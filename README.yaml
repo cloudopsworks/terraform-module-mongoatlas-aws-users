@@ -92,9 +92,10 @@ usage: |-
 
     # Hoop Configuration (data-only, consumed by terraform-module-hoop-connection)
     hoop = {
-      enabled  = true
-      agent_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-      tags     = { environment = "production" }
+      enabled   = true
+      community = true  # (Optional) Use community agent format (_aws:secret:key). Default: true.
+      agent_id  = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+      tags      = { environment = "production" }
     }
 
     # Password Management
@@ -233,9 +234,10 @@ examples: |-
     }
 
     hoop = {
-      enabled  = true
-      agent_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-      tags     = { environment = "production", team = "backend" }
+      enabled   = true
+      community = true
+      agent_id  = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+      tags      = { environment = "production", team = "backend" }
     }
 
     rotation_lambda_name = "mongodb-rotation-lambda"
