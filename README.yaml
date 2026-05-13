@@ -49,7 +49,7 @@ usage: |-
 
   ```hcl
   terraform {
-    source = "git::https://github.com/cloudopsworks/terraform-module-mongoatlas-aws-users.git?ref=v1.0.0"
+    source = "git::https://github.com/cloudopsworks/terraform-module-mongoatlas-aws-users.git?ref=v1.1.2"
   }
 
   inputs = {
@@ -169,7 +169,7 @@ examples: |-
 
   ```hcl
   terraform {
-    source = "git::https://github.com/cloudopsworks/terraform-module-mongoatlas-aws-users.git?ref=v1.0.0"
+    source = "git::https://github.com/cloudopsworks/terraform-module-mongoatlas-aws-users.git?ref=v1.1.2"
   }
 
   inputs = {
@@ -199,7 +199,7 @@ examples: |-
 
   ```hcl
   terraform {
-    source = "git::https://github.com/cloudopsworks/terraform-module-mongoatlas-aws-users.git?ref=v1.0.0"
+    source = "git::https://github.com/cloudopsworks/terraform-module-mongoatlas-aws-users.git?ref=v1.1.2"
   }
 
   inputs = {
