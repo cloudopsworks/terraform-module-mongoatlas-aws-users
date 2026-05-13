@@ -77,7 +77,7 @@ Instead pin to the release tag (e.g. `?ref=vX.Y.Z`) of one of our [latest releas
 
 ```hcl
 terraform {
-  source = "git::https://github.com/cloudopsworks/terraform-module-mongoatlas-aws-users.git?ref=v1.0.0"
+  source = "git::https://github.com/cloudopsworks/terraform-module-mongoatlas-aws-users.git?ref=v1.1.2"
 }
 
 inputs = {
@@ -213,7 +213,7 @@ extra_tags: {} # (Optional) Extra tags. Default: {}.
 
 ```hcl
 terraform {
-  source = "git::https://github.com/cloudopsworks/terraform-module-mongoatlas-aws-users.git?ref=v1.0.0"
+  source = "git::https://github.com/cloudopsworks/terraform-module-mongoatlas-aws-users.git?ref=v1.1.2"
 }
 
 inputs = {
@@ -243,7 +243,7 @@ inputs = {
 
 ```hcl
 terraform {
-  source = "git::https://github.com/cloudopsworks/terraform-module-mongoatlas-aws-users.git?ref=v1.0.0"
+  source = "git::https://github.com/cloudopsworks/terraform-module-mongoatlas-aws-users.git?ref=v1.1.2"
 }
 
 inputs = {
@@ -326,13 +326,13 @@ Available targets:
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | ~> 6.35 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 6.40.0 |
 
 ## Modules
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_mongoatlas_users"></a> [mongoatlas\_users](#module\_mongoatlas\_users) | git::https://github.com/cloudopsworks/terraform-module-mongoatlas-users.git | v1.4.1 |
+| <a name="module_mongoatlas_users"></a> [mongoatlas\_users](#module\_mongoatlas\_users) | git::https://github.com/cloudopsworks/terraform-module-mongoatlas-users.git | v1.4.3 |
 | <a name="module_tags"></a> [tags](#module\_tags) | cloudopsworks/tags/local | 1.0.9 |
 
 ## Resources
