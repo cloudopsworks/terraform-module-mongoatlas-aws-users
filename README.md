@@ -332,7 +332,7 @@ Available targets:
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_mongoatlas_users"></a> [mongoatlas\_users](#module\_mongoatlas\_users) | git::https://github.com/cloudopsworks/terraform-module-mongoatlas-users.git | v1.4.3 |
+| <a name="module_mongoatlas_users"></a> [mongoatlas\_users](#module\_mongoatlas\_users) | git::https://github.com/cloudopsworks/terraform-module-mongoatlas-users.git | v1.4.5 |
 | <a name="module_tags"></a> [tags](#module\_tags) | cloudopsworks/tags/local | 1.0.9 |
 
 ## Resources
