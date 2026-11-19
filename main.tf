@@ -8,7 +8,7 @@
 #
 
 module "mongoatlas_users" {
-  source = "git::https://github.com/cloudopsworks/terraform-module-mongoatlas-users.git?ref=v1.4.8-alpha.3"
+  source = "git::https://github.com/cloudopsworks/terraform-module-mongoatlas-users.git?ref=v1.4.8-alpha.4"
 
   is_hub     = var.is_hub
   spoke_def  = var.spoke_def
