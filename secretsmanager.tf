@@ -15,6 +15,9 @@ locals {
       lower(replace(k, "_", "-")),
     )
   }
+  # Hoop secret reference format: community agent (_aws:<secret>:<key>) vs enterprise gateway (_envs/aws/<secret>#<key>)
+  hoop_secret_prefix = try(var.hoop.community, true) ? "_aws" : "_envs/aws"
+  hoop_secret_sep    = try(var.hoop.community, true) ? ":" : "#"
 }
 
 resource "aws_secretsmanager_secret" "atlas_cred_conn" {
@@ -51,21 +54,6 @@ data "aws_secretsmanager_secrets" "atlas_cred_conn_rotated" {
     name   = "name"
     values = [local.name_list[each.key]]
   }
-}
-
-data "aws_secretsmanager_secret_versions" "atlas_cred_conn_rotated" {
-  for_each = {
-    for k, v in var.users : k => v if var.rotation_lambda_name != "" && length(try(data.aws_secretsmanager_secrets.atlas_cred_conn_rotated[k].names, [])) > 0
-  }
-  secret_id          = local.name_list[each.key]
-  include_deprecated = true
-}
-
-data "aws_secretsmanager_secret_version" "atlas_cred_conn_rotated" {
-  for_each = {
-    for k, v in var.users : k => v if var.rotation_lambda_name != "" && length(try(data.aws_secretsmanager_secrets.atlas_cred_conn_rotated[k].names, [])) > 0 && length(try(data.aws_secretsmanager_secret_versions.atlas_cred_conn_rotated[k].versions, [])) > 0
-  }
-  secret_id = local.name_list[each.key]
 }
 
 data "aws_lambda_function" "rotation_function" {
