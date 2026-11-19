@@ -15,6 +15,9 @@ locals {
       lower(replace(k, "_", "-")),
     )
   }
+  # Hoop secret reference format: community agent (_aws:<secret>:<key>) vs enterprise gateway (_envs/aws/<secret>#<key>)
+  hoop_secret_prefix = try(var.hoop.community, true) ? "_aws" : "_envs/aws"
+  hoop_secret_sep    = try(var.hoop.community, true) ? ":" : "#"
 }
 
 resource "aws_secretsmanager_secret" "atlas_cred_conn" {
