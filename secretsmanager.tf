@@ -53,21 +53,6 @@ data "aws_secretsmanager_secrets" "atlas_cred_conn_rotated" {
   }
 }
 
-data "aws_secretsmanager_secret_versions" "atlas_cred_conn_rotated" {
-  for_each = {
-    for k, v in var.users : k => v if var.rotation_lambda_name != "" && length(try(data.aws_secretsmanager_secrets.atlas_cred_conn_rotated[k].names, [])) > 0
-  }
-  secret_id          = local.name_list[each.key]
-  include_deprecated = true
-}
-
-data "aws_secretsmanager_secret_version" "atlas_cred_conn_rotated" {
-  for_each = {
-    for k, v in var.users : k => v if var.rotation_lambda_name != "" && length(try(data.aws_secretsmanager_secrets.atlas_cred_conn_rotated[k].names, [])) > 0 && length(try(data.aws_secretsmanager_secret_versions.atlas_cred_conn_rotated[k].versions, [])) > 0
-  }
-  secret_id = local.name_list[each.key]
-}
-
 data "aws_lambda_function" "rotation_function" {
   count         = var.rotation_lambda_name != "" ? 1 : 0
   function_name = var.rotation_lambda_name
