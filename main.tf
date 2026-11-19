@@ -22,6 +22,6 @@ module "mongoatlas_users" {
   hoop                        = var.hoop
   force_reset                 = var.force_reset
   password_rotation_period    = var.password_rotation_period
-  region                      = data.aws_region.current.id
+  region                      = data.aws_region.current.region
   password_externally_managed = var.rotation_lambda_name != ""
 }
